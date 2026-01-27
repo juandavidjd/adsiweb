@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADSI Sensory Feedback Mode</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
+  #canvas { position:absolute; top:0; left:0; width:100%; height:100%; }
+  #subtitle { position:absolute; bottom:80px; width:100%; text-align:center; color:#00ffff; font-size:22px; text-shadow:0 0 20px #00ffff; opacity:0; transition:opacity 1s; }
+  #controls { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); }
+  button { background:linear-gradient(135deg,#00ffff80,#0066ff60); border:1px solid #00ffff; border-radius:40px; padding:12px 36px; font-size:18px; color:white; cursor:pointer; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="subtitle"></div>
+<div id="controls">
+  <button id="startBtn">Activar Ecosistema ADSI</button>
+</div>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const subtitle = document.getElementById("subtitle");
+const startBtn = document.getElementById("startBtn");
+canvas.width = innerWidth; canvas.height = innerHeight;
+
+let micStream, analyser, dataArray;
+
+async function start() {
+  startBtn.style.display = "none";
+  subtitle.innerText = "Inicializando canal cognitivo...";
+  subtitle.style.opacity = 1;
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const source = audioCtx.createMediaStreamSource(micStream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  const bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+  source.connect(analyser);
+
+  animate();
+  setTimeout(() => narrate("Canal auditivo activo. El sistema escucha tu entorno."), 4000);
+  setTimeout(() => narrate("Procesando niveles de energía..."), 9000);
+  setTimeout(() => narrate("Sincronización sensorial establecida."), 16000);
+}
+
+function narrate(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "es-ES";
+  speechSynthesis.speak(utter);
+  subtitle.innerText = text;
+  subtitle.style.opacity = 1;
+  setTimeout(() => subtitle.style.opacity = 0, 5000);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  ctx.fillStyle = "rgba(0,0,20,0.15)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  analyser.getByteFrequencyData(dataArray);
+  const avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+
+  const color = `hsl(${180 + avg/3},100%,${30 + avg/10}%)`;
+  const size = 150 + avg;
+  const grad = ctx.createRadialGradient(canvas.width/2,canvas.height/2,50,canvas.width/2,canvas.height/2,size);
+  grad.addColorStop(0, color);
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.beginPath();
+  ctx.fillStyle = grad;
+  ctx.arc(canvas.width/2,canvas.height/2,size,0,Math.PI*2);
+  ctx.fill();
+}
+startBtn.addEventListener("click", start);
+</script>
+</body>
+</html>

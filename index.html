@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecosistema ADSI — Experiencia Cinematográfica</title>
+
+  <link rel="icon" type="image/png" href="favicon-32x32.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;700&family=Montserrat:wght@300;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #050505;
+      color: #f2f2f2;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 5vw;
+      opacity: 0;
+      transform: translateY(60px);
+    }
+    h1, h2 {
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    h1 { font-size: 4vw; color: #00f7ff; text-shadow: 0 0 30px #00f7ff44; }
+    h2 { font-size: 2.5vw; color: #fff; text-shadow: 0 0 20px #ffffff33; }
+    p { max-width: 900px; font-size: 1.2vw; margin-top: 1rem; color: #ccc; }
+
+    #logo {
+      width: 200px;
+      opacity: 0.8;
+      filter: drop-shadow(0 0 20px #00f7ff);
+      transition: all 0.8s ease;
+    }
+
+    .active-section {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+      transition: all 1.5s ease;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at center, rgba(0,247,255,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay"></div>
+
+  <section id="intro">
+    <img id="logo" src="images/logo-adsi.webp" alt="Logo ADSI" />
+    <h1>Ecosistema ADSI</h1>
+    <h2>Análisis — Diseño — Desarrollo — Implementación</h2>
+    <p>Una experiencia cognitiva donde cada desplazamiento revela una nueva capa de inteligencia digital. Respira, desliza y deja que la arquitectura piense contigo.</p>
+  </section>
+
+  <section id="analisis">
+    <h2>1. Análisis</h2>
+    <p>Identificamos patrones, datos y contextos. Comprendemos cómo piensa tu organización antes de rediseñar cómo actúa.</p>
+  </section>
+
+  <section id="diseno">
+    <h2>2. Diseño</h2>
+    <p>Construimos la narrativa visual, técnica y funcional. Cada interfaz, cada flujo, cada interacción refleja una estrategia consciente.</p>
+  </section>
+
+  <section id="desarrollo">
+    <h2>3. Desarrollo</h2>
+    <p>Transformamos la visión en código inteligente. Arquitectura secuencial y componentes que aprenden con cada interacción.</p>
+  </section>
+
+  <section id="implementacion">
+    <h2>4. Implementación</h2>
+    <p>Integramos el sistema en su entorno real. Donde la estrategia se convierte en resultados medibles y sostenibles.</p>
+  </section>
+
+  <section id="cierre">
+    <h2>ADSI — Inteligencia que evoluciona contigo</h2>
+    <p>La nueva era no se diseña, se entrena. Bienvenido al punto donde los sistemas piensan como las personas y las personas actúan como sistemas.</p>
+  </section>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const audioMap = {
+      intro: new Audio("audio/bloque1_intro.mp3"),
+      analisis: new Audio("audio/bloque2_fases.mp3"),
+      diseno: new Audio("audio/bloque3_filosofia.mp3"),
+      desarrollo: new Audio("audio/bloque4_diagnostico.mp3"),
+      implementacion: new Audio("audio/bloque5_cierre.mp3"),
+      cierre: new Audio("audio/bloque6_firma.mp3")
+    };
+
+    Object.values(audioMap).forEach(a => { a.volume = 0.6; a.preload = 'auto'; });
+
+    const sections = document.querySelectorAll("section");
+
+    sections.forEach((sec, i) => {
+      ScrollTrigger.create({
+        trigger: sec,
+        start: "top center",
+        onEnter: () => {
+          sections.forEach(s => s.classList.remove("active-section"));
+          sec.classList.add("active-section");
+
+          Object.values(audioMap).forEach(a => a.pause());
+          const key = sec.id;
+          if (audioMap[key]) {
+            audioMap[key].currentTime = 0;
+            audioMap[key].play();
+          }
+        }
+      });
+    });
+
+    gsap.from("#logo", { opacity: 0, y: -50, duration: 2, ease: "power2.out" });
+  </script>
+  <script type="module" src="js/adsi-audio-engine.js"></script>
+<script type="module" src="js/adsi-visual-reactor.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ADSI Sensory Dashboard</title>
+<link rel="stylesheet" href="dashboard-pro.css">
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <div id="hud">
+    <h1>🧠 ADSI SENSORY DASHBOARD</h1>
+    <div id="metrics">
+      <div><label>CPU</label><span id="cpu">0%</span></div>
+      <div><label>Memoria</label><span id="mem">0%</span></div>
+      <div><label>Uptime</label><span id="uptime">0m</span></div>
+    </div>
+    <audio id="soundscape" src="audio/Soundscape-ADSI-Master.wav" loop></audio>
+  </div>
+
+  <script src="dashboard-pro.js"></script>
+</body>
+</html>

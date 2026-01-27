@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ADSI Control Nexus — Centro Cognitivo Maestro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%; width: 100%;
+    background: linear-gradient(180deg, #000020, #000);
+    color: #00ffff;
+    font-family: "Segoe UI", sans-serif;
+    overflow: hidden;
+  }
+  h1 {
+    text-align: center;
+    margin: 10px 0;
+    color: #00eaff;
+    text-shadow: 0 0 12px #00eaff80;
+  }
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    padding: 30px;
+  }
+  .panel {
+    background: rgba(0, 10, 20, 0.8);
+    border: 1px solid #00ffff40;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 15px #00ffff20;
+    transition: transform 0.3s;
+  }
+  .panel:hover {
+    transform: scale(1.03);
+    border-color: #00ffff;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  input[type=range] {
+    width: 100%;
+    accent-color: #00ffff;
+  }
+  select, input[type=color] {
+    width: 100%;
+    margin-top: 5px;
+    background: #001a1a;
+    color: #00ffff;
+    border: 1px solid #00ffff80;
+    border-radius: 8px;
+    padding: 6px;
+  }
+  button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #00ffff;
+    background: #001a1a;
+    color: #00ffff;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    background: #00ffff20;
+  }
+  #footer {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+<h1>🕹️ ADSI CONTROL NEXUS</h1>
+
+<div id="grid">
+  <!-- Audio Sensitivity -->
+  <div class="panel">
+    <h3>🎙️ Sensibilidad Auditiva</h3>
+    <label for="micGain">Ganancia de micrófono</label>
+    <input type="range" id="micGain" min="0" max="200" value="100">
+    <label for="reverbLevel">Reverberación</label>
+    <input type="range" id="reverbLevel" min="0" max="100" value="50">
+    <button onclick="applyAudioSettings()">Aplicar</button>
+  </div>
+
+  <!-- Emotional Color -->
+  <div class="panel">
+    <h3>🌈 Color Emocional Base</h3>
+    <label for="colorBase">Selecciona tono principal</label>
+    <input type="color" id="colorBase" value="#00ffaa">
+    <label for="mode">Modo cognitivo</label>
+    <select id="mode">
+      <option value="calma">Calma</option>
+      <option value="flujo">Flujo</option>
+      <option value="expansion">Expansión</option>
+    </select>
+    <button onclick="applyVisualSettings()">Aplicar</button>
+  </div>
+
+  <!-- Voice Configuration -->
+  <div class="panel">
+    <h3>🗣️ Configuración de Voz Cognitiva</h3>
+    <label for="voiceSelect">Voz</label>
+    <select id="voiceSelect"></select>
+    <label for="rate">Velocidad</label>
+    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+    <label for="pitch">Tono</label>
+    <input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1">
+    <button onclick="speakAdaptive('El sistema ADSI está sincronizado con el entorno cognitivo.')">Probar voz</button>
+  </div>
+
+  <!-- Memory Management -->
+  <div class="panel">
+    <h3>🧬 Memoria Cognitiva</h3>
+    <button onclick="loadMemory()">📖 Cargar memoria auditiva</button>
+    <div id="memoryOutput" style="margin-top:10px; font-size:13px;"></div>
+    <button onclick="resetMemory()">🧹 Reiniciar memoria</button>
+  </div>
+
+  <!-- Network and System -->
+  <div class="panel">
+    <h3>🌐 Sincronización de Red</h3>
+    <label for="syncToggle">Modo de conexión</label>
+    <select id="syncToggle">
+      <option value="local">Local</option>
+      <option value="cloud">Nube</option>
+    </select>
+    <button onclick="simulateSync()">Sincronizar</button>
+  </div>
+</div>
+
+<div id="footer">© ADSI Cognitive Systems — Entorno Integral de Interacción Humano-Digital</div>
+
+<script>
+// --- Inicialización de voces ---
+let voices = [];
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  const select = document.getElementById("voiceSelect");
+  select.innerHTML = voices.map(v => `<option value="${v.name}">${v.name} (${v.lang})</option>`).join("");
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+
+// --- Configuración de voz adaptativa ---
+function speakAdaptive(text){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.voice = voices.find(v => v.name === document.getElementById("voiceSelect").value);
+  utter.rate = parseFloat(document.getElementById("rate").value);
+  utter.pitch = parseFloat(document.getElementById("pitch").value);
+  speechSynthesis.speak(utter);
+}
+
+// --- Configuración visual ---
+function applyVisualSettings(){
+  const color = document.getElementById("colorBase").value;
+  const mode = document.getElementById("mode").value;
+  document.body.style.background = `radial-gradient(circle at center, ${color}20, #000)`;
+  speakAdaptive(`Modo ${mode} activado. Color emocional sincronizado.`);
+}
+
+// --- Configuración auditiva ---
+function applyAudioSettings(){
+  const gain = document.getElementById("micGain").value;
+  const reverb = document.getElementById("reverbLevel").value;
+  speakAdaptive(`Sensibilidad auditiva ajustada a ${gain}%. Reverberación a ${reverb}%.`);
+}
+
+// --- Memoria cognitiva ---
+async function loadMemory(){
+  try {
+    const res = await fetch("audio-memory.json");
+    const data = await res.json();
+    const avg = (data.average * 100).toFixed(1);
+    document.getElementById("memoryOutput").innerHTML = `Promedio de energía: ${avg}%<br>Sesiones guardadas: ${data.sessions.length}`;
+    speakAdaptive(`Memoria auditiva cargada. Energía promedio ${avg} por ciento.`);
+  } catch {
+    document.getElementById("memoryOutput").innerHTML = "No se encontró memoria auditiva.";
+    speakAdaptive("No hay memoria auditiva registrada.");
+  }
+}
+function resetMemory(){
+  localStorage.clear();
+  document.getElementById("memoryOutput").innerHTML = "Memoria reiniciada.";
+  speakAdaptive("Memoria cognitiva reiniciada.");
+}
+
+// --- Simulación de sincronización ---
+function simulateSync(){
+  const mode = document.getElementById("syncToggle").value;
+  speakAdaptive(`Sincronización en modo ${mode}.`);
+}
+</script>
+</body>
+</html>

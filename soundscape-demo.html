@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ADSI Soundscape — Experiencia Narrativa Cognitiva</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: radial-gradient(circle at center, #000010 0%, #000000 100%);
+    overflow: hidden; font-family: "Orbitron", sans-serif;
+    color: #e0e0e0;
+  }
+
+  #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+  #title {
+    position: absolute; top: 60px; width: 100%; text-align: center;
+    font-size: 34px; color: #00ffff; text-shadow: 0 0 20px #00ffff;
+    letter-spacing: 4px; animation: glow 3s infinite alternate;
+  }
+
+  #controls {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    text-align: center;
+  }
+
+  #playButton {
+    background: linear-gradient(135deg, #00ffff80, #00aaff50);
+    border: 1px solid #00ffff;
+    padding: 14px 40px; border-radius: 40px;
+    font-size: 20px; cursor: pointer; color: #fff;
+    text-transform: uppercase; letter-spacing: 2px;
+    transition: all 0.3s;
+  }
+  #playButton:hover { background: linear-gradient(135deg, #00ffff, #0077ff); transform: scale(1.05); }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 10px #0077ff; }
+    to { text-shadow: 0 0 30px #00ffff; }
+  }
+
+  #subtitle {
+    position: absolute; bottom: 100px; width: 100%;
+    text-align: center; font-size: 22px;
+    color: #ffffff; opacity: 0;
+    text-shadow: 0 0 15px #00ffff;
+  }
+</style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="title">ADSI Soundscape — Cognitive Resonance Experience</div>
+  <div id="subtitle"></div>
+  <div id="controls">
+    <button id="playButton">Iniciar Experiencia</button>
+  </div>
+
+  <audio id="soundscape" src="audio/Soundscape-ADSI-Master.mp3" preload="auto"></audio>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const audio = document.getElementById("soundscape");
+    const subtitle = document.getElementById("subtitle");
+    const playButton = document.getElementById("playButton");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let analyzer, dataArray, audioCtx, source, bufferLength;
+    let particles = [];
+
+    for (let i = 0; i < 180; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2 + 1,
+        dx: Math.random() * 0.6 - 0.3,
+        dy: Math.random() * 0.6 - 0.3,
+        hue: 180 + Math.random() * 100
+      });
+    }
+
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      ctx.fillStyle = "rgba(0, 0, 20, 0.15)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!dataArray) return;
+
+      analyzer.getByteFrequencyData(dataArray);
+      const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+      const radius = 200 + avg * 0.8;
+
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, radius * 0.2,
+        canvas.width / 2, canvas.height / 2, radius
+      );
+      gradient.addColorStop(0, `rgba(0,255,255,0.8)`);
+      gradient.addColorStop(1, `rgba(0,0,40,0)`);
+
+      ctx.beginPath();
+      ctx.fillStyle = gradient;
+      ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.fillStyle = `hsla(${p.hue + avg / 5}, 100%, 60%, 0.7)`;
+        ctx.arc(p.x, p.y, p.r + avg / 150, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      });
+    }
+
+    async function initAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      source = audioCtx.createMediaElementSource(audio);
+      analyzer = audioCtx.createAnalyser();
+      analyzer.fftSize = 256;
+      bufferLength = analyzer.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+      source.connect(analyzer);
+      analyzer.connect(audioCtx.destination);
+    }
+
+    // 🎙️ Sistema de narración sincronizada
+    const speechQueue = [
+      { t: 2, text: "Iniciando análisis cognitivo del Ecosistema ADSI..." },
+      { t: 15, text: "Activando módulos de diseño, desarrollo e implementación." },
+      { t: 32, text: "Detectando conexión emocional y respuesta consciente." },
+      { t: 48, text: "Optimizando sincronía entre mente, sistema y entorno." },
+      { t: 65, text: "Ejecución completa. Ecosistema ADSI plenamente activo." }
+    ];
+
+    function narrate(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "es-ES";
+      utter.pitch = 1.0;
+      utter.rate = 0.95;
+      utter.volume = 1;
+      utter.voice = speechSynthesis.getVoices().find(v => /Google|Microsoft|Paulina|Helena|Lucia/i.test(v.name)) || speechSynthesis.getVoices()[0];
+      speechSynthesis.speak(utter);
+
+      subtitle.innerText = text;
+      gsap.to(subtitle, { opacity: 1, duration: 0.8 });
+      setTimeout(() => gsap.to(subtitle, { opacity: 0, duration: 1.5 }), 7000);
+    }
+
+    playButton.addEventListener("click", async () => {
+      playButton.disabled = true;
+      playButton.innerText = "Cargando...";
+      await initAudio();
+      drawVisualizer();
+
+      gsap.to("#title", { opacity: 1, duration: 1.5 });
+      gsap.to("body", { backgroundColor: "#000022", duration: 3 });
+      gsap.to("#controls", { opacity: 0, duration: 2 });
+
+      setTimeout(() => {
+        audio.play();
+        playButton.style.display = "none";
+
+        // 🧠 Lanzar narraciones sincronizadas
+        speechQueue.forEach(item => {
+          setTimeout(() => narrate(item.text), item.t * 1000);
+        });
+
+      }, 1200);
+    });
+  </script>
+</body>
+</html>

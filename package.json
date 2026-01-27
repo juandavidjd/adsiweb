@@ -1,0 +1,16 @@
+{
+  "name": "adsi-soundscape-presentation",
+  "version": "1.0.0",
+  "description": "Presentación inmersiva del Ecosistema ADSI — Soundscape Cinemático",
+  "main": "launch-adsi-presentation.js",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.21.2",
+    "open": "^8.4.2"
+  },
+  "scripts": {
+    "start": "node launch-adsi-presentation.js"
+  },
+  "author": "ADSI Cognitive Systems",
+  "license": "MIT"
+}

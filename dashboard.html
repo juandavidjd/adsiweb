@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ADSI Dashboard Local</title>
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header>
+    <h1>🧠 ADSI COGNITIVE DASHBOARD</h1>
+    <p>Monitor de entorno cognitivo local — Ecosistema ADSI</p>
+  </header>
+
+  <main>
+    <section id="metrics">
+      <div class="card"><h3>CPU</h3><span id="cpu">0%</span></div>
+      <div class="card"><h3>Memoria</h3><span id="mem">0%</span></div>
+      <div class="card"><h3>Uptime</h3><span id="uptime">0 min</span></div>
+    </section>
+
+    <section id="modules">
+      <h2>🔧 Módulos Activos</h2>
+      <ul id="modlist"></ul>
+    </section>
+
+    <section id="controls">
+      <h2>⚙️ Control del Servicio</h2>
+      <button onclick="control('start')">Iniciar</button>
+      <button onclick="control('stop')">Detener</button>
+      <button onclick="control('restart')">Reiniciar</button>
+    </section>
+  </main>
+
+  <footer>© 2025 ADSI Cognitive Systems — Local Monitoring Interface</footer>
+  <script src="dashboard.js"></script>
+</body>
+</html>
