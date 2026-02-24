@@ -1,4 +1,4 @@
-import { fetchEcosystemStats, sendChatMessage, speakText } from "./odi-gateway.js";
+import { fetchEcosystemStats, sendChatMessage, speakText, unlockAudioPlayback } from "./odi-gateway.js";
 
 const presenceStatus = document.getElementById("presenceStatus");
 const inputLayer = document.getElementById("inputLayer");
@@ -131,6 +131,7 @@ window.addEventListener("keydown", async (event) => {
   const wasInputVisible = inputLayer.dataset.visible === "true";
 
   revealInput();
+  await unlockAudioPlayback();
   await greetOnIntent();
 
   // Conserva la primera pulsación cuando el input estaba oculto.
@@ -159,6 +160,7 @@ textInput.addEventListener("keydown", async (event) => {
 
 flame.addEventListener("click", async () => {
   revealInput();
+  await unlockAudioPlayback();
   await greetOnIntent();
 });
 
@@ -167,6 +169,7 @@ if (voiceButton) {
     state.voiceEnabled = true;
     localStorage.setItem("odi_voice", "true");
     voiceButton.hidden = true;
+    await unlockAudioPlayback();
     await speakText("Ahora puedo hablar contigo.", "ramona");
   });
 }

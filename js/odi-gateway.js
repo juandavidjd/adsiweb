@@ -1,8 +1,15 @@
 const DEFAULT_GATEWAY_API = window.ODI_GATEWAY_API || "https://api.liveodi.com/odi/v1";
 const DEFAULT_CHAT_API = window.ODI_CHAT_API || "https://api.liveodi.com";
-const DEFAULT_SPEAK_API = window.ODI_SPEAK_API || "https://api.liveodi.com/odi/speak";
+
+const SPEAK_ENDPOINTS = [
+  window.ODI_SPEAK_API,
+  "https://chat.liveodi.com/odi/chat/speak",
+  "https://api.liveodi.com/odi/speak",
+].filter(Boolean);
 
 const GOVERNED_STORES = new Set(["DFG", "ARMOTOS", "VITTON", "IMBRA", "BARA", "KAIQI", "MCLMOTOS"]);
+
+let audioUnlocked = false;
 
 function parseStoreName(store) {
   return String(store?.name || store?.store || store?.code || "").toUpperCase();
@@ -32,6 +39,36 @@ function normalizeProducts(data) {
       store: item?.store || item?.tienda || item?.proveedor || "",
     }))
     .filter((item) => item.title || item.sku || item.url);
+}
+
+async function playBlob(blob) {
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  audio.onended = () => URL.revokeObjectURL(url);
+  audio.onerror = () => URL.revokeObjectURL(url);
+  await audio.play();
+}
+
+async function playFromUrl(url) {
+  const audio = new Audio(url);
+  await audio.play();
+}
+
+export async function unlockAudioPlayback() {
+  if (audioUnlocked) return true;
+  try {
+    const ctx = new AudioContext();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start();
+    await ctx.close();
+    audioUnlocked = true;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function fetchEcosystemStats() {
@@ -106,27 +143,36 @@ export async function sendChatMessage(message, sessionId) {
 }
 
 export async function speakText(text, voice = "ramona") {
-  if (!text) return false;
+  if (!text || !SPEAK_ENDPOINTS.length) return false;
 
-  try {
-    const res = await fetch(DEFAULT_SPEAK_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice }),
-    });
+  for (const endpoint of SPEAK_ENDPOINTS) {
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "audio/mpeg, application/json" },
+        body: JSON.stringify({ text, voice }),
+      });
 
-    if (!res.ok) return false;
+      if (!res.ok) continue;
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const data = await res.json();
+        const remoteAudioUrl = data?.audio_url || data?.url;
+        if (remoteAudioUrl) {
+          await playFromUrl(remoteAudioUrl);
+          return true;
+        }
+        continue;
+      }
 
-    audio.onended = () => URL.revokeObjectURL(url);
-    audio.onerror = () => URL.revokeObjectURL(url);
-
-    await audio.play();
-    return true;
-  } catch {
-    return false;
+      const blob = await res.blob();
+      await playBlob(blob);
+      return true;
+    } catch {
+      // intenta siguiente endpoint
+    }
   }
+
+  return false;
 }
