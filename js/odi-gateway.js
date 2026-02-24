@@ -3,11 +3,12 @@ const DEFAULT_CHAT_API = window.ODI_CHAT_API || "https://api.liveodi.com";
 
 const SPEAK_ENDPOINTS = [
   window.ODI_SPEAK_API,
-  "/odi/v1/speak",
+  "https://api.liveodi.com/odi/chat/speak",
   "/odi/chat/speak",
-  "https://chat.liveodi.com/odi/chat/speak",
+  "/odi/v1/speak",
   "https://api.liveodi.com/odi/speak",
   "https://api.liveodi.com/odi/v1/speak",
+  "https://chat.liveodi.com/odi/chat/speak",
 ].filter(Boolean);
 
 const GOVERNED_STORES = new Set(["DFG", "ARMOTOS", "VITTON", "IMBRA", "BARA", "KAIQI", "MCLMOTOS"]);
