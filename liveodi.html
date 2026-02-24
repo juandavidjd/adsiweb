@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LIVEODI — Presencia</title>
+  <link rel="stylesheet" href="css/liveodi.css" />
+</head>
+<body>
+  <main class="habitat" aria-live="polite">
+    <header class="presence-header">
+      <div class="presence-brand">LIVEODI</div>
+      <div id="presenceStatus" class="presence-status" title="Estado operativo">vivo</div>
+      <div id="listeningDot" class="listening-dot" aria-label="Escucha activa"></div>
+    </header>
+
+    <section class="core">
+      <button id="flame" class="flame" aria-label="Activar ODI">
+        <span class="flame-inner"></span>
+      </button>
+      <h1>Soy ODI.</h1>
+      <p id="greetingText" class="greeting" aria-live="polite"></p>
+    </section>
+
+    <button id="voiceOptIn" class="voice-opt-in" hidden>🎙 Activar voz</button>
+
+    <section class="input-layer" id="inputLayer" data-visible="false">
+      <label for="textInput" class="sr-only">Escribe a ODI</label>
+      <input id="textInput" type="text" autocomplete="off" placeholder="..." />
+    </section>
+
+    <section id="cards" class="cards"></section>
+    <section class="conversation" id="conversation"></section>
+  </main>
+
+  <script type="module" src="js/liveodi.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "manifest_version": "1.0",
+  "sealed_at": "2026-02-07",
+  "principles": {
+    "habitability": true,
+    "silence_grammar": true,
+    "ephemeral_protocol": "3/3",
+    "ethics_first": true,
+    "sovereignty_ritual": true
+  },
+  "guardian": {
+    "states": ["verde", "amarillo", "naranja", "rojo"],
+    "critical_lock_states": ["naranja", "rojo"],
+    "only_event_when_critical": "guardian_alert"
+  },
+  "visual_rules": {
+    "default_ttl_ms": 6000,
+    "fitment_ttl_ms": 12000,
+    "window_types": ["ephemeral_window", "overlay", "flame_pulse", "flame_shield"]
+  },
+  "auth": {
+    "methods": ["facial", "voice", "passphrase"]
+  }
+}
