@@ -15,6 +15,25 @@ const GOVERNED_STORES = new Set(["DFG", "ARMOTOS", "VITTON", "IMBRA", "BARA", "K
 
 let audioUnlocked = false;
 
+const VOICE_IDS = {
+  ramona: "ZAQFLZQOmS9ClDGyVg6d",
+  tony: "qpjUiwx7YUVAavnmh2sF",
+};
+
+function buildSpeakPayload(text, voice) {
+  const normalizedVoice = String(voice || "ramona").toLowerCase();
+  const voiceId = VOICE_IDS[normalizedVoice] || VOICE_IDS.ramona;
+  return {
+    text,
+    voice: normalizedVoice,
+    voz: normalizedVoice,
+    speaker: normalizedVoice,
+    voice_name: normalizedVoice,
+    voice_id: voiceId,
+  };
+}
+
+
 function parseStoreName(store) {
   return String(store?.name || store?.store || store?.code || "").toUpperCase();
 }
@@ -174,7 +193,7 @@ export async function speakText(text, voice = "ramona") {
       const okJson = await trySpeakRequest(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "audio/mpeg, application/json" },
-        body: JSON.stringify({ text, voice }),
+        body: JSON.stringify(buildSpeakPayload(text, voice)),
       });
       if (okJson) return true;
     } catch {
@@ -182,7 +201,8 @@ export async function speakText(text, voice = "ramona") {
     }
 
     try {
-      const params = new URLSearchParams({ text, voice });
+      const payload = buildSpeakPayload(text, voice);
+      const params = new URLSearchParams(Object.entries(payload).reduce((a,[k,v])=>{a[k]=String(v);return a;}, {}));
       const okForm = await trySpeakRequest(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "audio/mpeg, application/json" },
@@ -195,8 +215,8 @@ export async function speakText(text, voice = "ramona") {
 
     try {
       const query = new URL(endpoint, window.location.origin);
-      query.searchParams.set("text", text);
-      query.searchParams.set("voice", voice);
+      const payload = buildSpeakPayload(text, voice);
+      Object.entries(payload).forEach(([k,v]) => query.searchParams.set(k, String(v)));
       const okGet = await trySpeakRequest(query.toString(), {
         method: "GET",
         headers: { Accept: "audio/mpeg, application/json" },
