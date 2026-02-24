@@ -44,32 +44,70 @@ function revealInput() {
 }
 
 function revealVoiceOptIn() {
+  if (!voiceButton || state.voiceEnabled) return;
   voiceButton.hidden = false;
+}
+
+function safeText(value) {
+  return value == null ? "" : String(value);
+}
+
+function createCard(product) {
+  const card = document.createElement("article");
+  card.className = "card";
+
+  if (product.image) {
+    const img = document.createElement("img");
+    img.src = safeText(product.image);
+    img.alt = safeText(product.title || "Producto");
+    img.loading = "lazy";
+    card.appendChild(img);
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = safeText(product.title || "Producto");
+  card.appendChild(title);
+
+  if (product.sku) {
+    const sku = document.createElement("p");
+    sku.className = "meta";
+    sku.textContent = safeText(product.sku);
+    card.appendChild(sku);
+  }
+
+  if (product.price != null) {
+    const price = document.createElement("p");
+    price.className = "price";
+    price.textContent = `$${Number(product.price).toLocaleString("es-CO")}`;
+    card.appendChild(price);
+  }
+
+  if (product.store) {
+    const store = document.createElement("p");
+    store.className = "meta";
+    store.textContent = safeText(product.store);
+    card.appendChild(store);
+  }
+
+  if (product.url) {
+    const link = document.createElement("a");
+    link.href = safeText(product.url);
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "Ver";
+    card.appendChild(link);
+  }
+
+  return card;
 }
 
 function renderCards(products = []) {
   cardsContainer.innerHTML = "";
-  if (!products.length) return;
+  if (!Array.isArray(products) || products.length === 0) return;
 
-  const limited = products.slice(0, 5);
-  for (const product of limited) {
-    const card = document.createElement("article");
-    card.className = "card";
-
-    const price = product.price != null ? `$${Number(product.price).toLocaleString("es-CO")}` : "";
-    const store = product.store ? `<p class="meta">${product.store}</p>` : "";
-
-    card.innerHTML = `
-      ${product.image ? `<img src="${product.image}" alt="${product.title}" loading="lazy" />` : ""}
-      <h3>${product.title}</h3>
-      <p class="meta">${product.sku || ""}</p>
-      <p class="price">${price}</p>
-      ${store}
-      ${product.url ? `<a href="${product.url}" target="_blank" rel="noopener">Ver</a>` : ""}
-    `;
-
-    cardsContainer.appendChild(card);
-  }
+  products.slice(0, 5).forEach((product) => {
+    cardsContainer.appendChild(createCard(product));
+  });
 }
 
 async function greetOnIntent() {
@@ -90,9 +128,16 @@ window.addEventListener("keydown", async (event) => {
   const printable = event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
   if (!printable) return;
 
+  const wasInputVisible = inputLayer.dataset.visible === "true";
+
   revealInput();
   await greetOnIntent();
-  if (document.activeElement !== textInput) textInput.value += event.key;
+
+  // Conserva la primera pulsación cuando el input estaba oculto.
+  if (!wasInputVisible && document.activeElement === textInput) {
+    textInput.value = `${textInput.value}${event.key}`;
+    event.preventDefault();
+  }
 });
 
 textInput.addEventListener("keydown", async (event) => {
@@ -117,12 +162,14 @@ flame.addEventListener("click", async () => {
   await greetOnIntent();
 });
 
-voiceButton.addEventListener("click", async () => {
-  state.voiceEnabled = true;
-  localStorage.setItem("odi_voice", "true");
-  voiceButton.hidden = true;
-  await speakText("Ahora puedo hablar contigo.", "ramona");
-});
+if (voiceButton) {
+  voiceButton.addEventListener("click", async () => {
+    state.voiceEnabled = true;
+    localStorage.setItem("odi_voice", "true");
+    voiceButton.hidden = true;
+    await speakText("Ahora puedo hablar contigo.", "ramona");
+  });
+}
 
 initStats();
 setTimeout(revealVoiceOptIn, 2000);

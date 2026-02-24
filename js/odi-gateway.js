@@ -12,6 +12,28 @@ function countProducts(store) {
   return Number(store?.products_count ?? store?.active ?? store?.total ?? 0);
 }
 
+function parsePrice(value) {
+  if (value == null || value === "") return null;
+  const normalized = Number(String(value).replace(/[^\d.,-]/g, "").replace(/\./g, "").replace(",", "."));
+  return Number.isFinite(normalized) ? normalized : null;
+}
+
+function normalizeProducts(data) {
+  const rawProducts = data?.productos || data?.products || data?.product_list || [];
+  if (!Array.isArray(rawProducts)) return [];
+
+  return rawProducts
+    .map((item) => ({
+      sku: item?.sku || item?.code || item?.codigo || item?.id_producto || "",
+      title: item?.title || item?.name || item?.nombre || "Producto",
+      price: parsePrice(item?.price ?? item?.precio ?? item?.precio_venta),
+      image: item?.image || item?.imagen || item?.thumbnail || "",
+      url: item?.url || item?.link || item?.permalink || "",
+      store: item?.store || item?.tienda || item?.proveedor || "",
+    }))
+    .filter((item) => item.title || item.sku || item.url);
+}
+
 export async function fetchEcosystemStats() {
   try {
     const res = await fetch(`${DEFAULT_GATEWAY_API}/ecosystem/stores`, {
@@ -53,27 +75,9 @@ export async function fetchEcosystemStats() {
   }
 }
 
-function normalizeProducts(data) {
-  const raw = data?.productos || data?.products || [];
-  if (!Array.isArray(raw)) return [];
-
-  return raw.map((item) => ({
-    sku: item?.sku || item?.code || "",
-    title: item?.title || item?.name || "Producto",
-    price: item?.price ?? item?.precio ?? null,
-    image: item?.image || item?.imagen || "",
-    url: item?.url || item?.link || "",
-    store: item?.store || item?.tienda || "",
-  }));
-}
-
 export async function sendChatMessage(message, sessionId) {
   const payload = { message, session_id: sessionId };
-
-  const candidates = [
-    `${DEFAULT_CHAT_API}/odi/chat`,
-    `${DEFAULT_GATEWAY_API}/chat`,
-  ];
+  const candidates = [`${DEFAULT_CHAT_API}/odi/chat`, `${DEFAULT_GATEWAY_API}/chat`];
 
   for (const url of candidates) {
     try {
@@ -85,6 +89,7 @@ export async function sendChatMessage(message, sessionId) {
 
       if (!res.ok) continue;
       const data = await res.json();
+
       return {
         response: data.response || data.message || data.narrative || "",
         narrative: data.narrative || data.response || data.message || "",
