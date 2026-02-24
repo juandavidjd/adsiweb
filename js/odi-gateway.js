@@ -3,8 +3,11 @@ const DEFAULT_CHAT_API = window.ODI_CHAT_API || "https://api.liveodi.com";
 
 const SPEAK_ENDPOINTS = [
   window.ODI_SPEAK_API,
+  "/odi/v1/speak",
+  "/odi/chat/speak",
   "https://chat.liveodi.com/odi/chat/speak",
   "https://api.liveodi.com/odi/speak",
+  "https://api.liveodi.com/odi/v1/speak",
 ].filter(Boolean);
 
 const GOVERNED_STORES = new Set(["DFG", "ARMOTOS", "VITTON", "IMBRA", "BARA", "KAIQI", "MCLMOTOS"]);
@@ -142,33 +145,62 @@ export async function sendChatMessage(message, sessionId) {
   return null;
 }
 
+async function trySpeakRequest(url, options) {
+  const res = await fetch(url, options);
+  if (!res.ok) return false;
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    const data = await res.json();
+    const remoteAudioUrl = data?.audio_url || data?.url;
+    if (remoteAudioUrl) {
+      await playFromUrl(remoteAudioUrl);
+      return true;
+    }
+    return false;
+  }
+
+  const blob = await res.blob();
+  await playBlob(blob);
+  return true;
+}
+
 export async function speakText(text, voice = "ramona") {
   if (!text || !SPEAK_ENDPOINTS.length) return false;
 
   for (const endpoint of SPEAK_ENDPOINTS) {
     try {
-      const res = await fetch(endpoint, {
+      const okJson = await trySpeakRequest(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "audio/mpeg, application/json" },
         body: JSON.stringify({ text, voice }),
       });
+      if (okJson) return true;
+    } catch {
+      // continúa a fallback simple request
+    }
 
-      if (!res.ok) continue;
+    try {
+      const params = new URLSearchParams({ text, voice });
+      const okForm = await trySpeakRequest(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "audio/mpeg, application/json" },
+        body: params.toString(),
+      });
+      if (okForm) return true;
+    } catch {
+      // continúa
+    }
 
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        const data = await res.json();
-        const remoteAudioUrl = data?.audio_url || data?.url;
-        if (remoteAudioUrl) {
-          await playFromUrl(remoteAudioUrl);
-          return true;
-        }
-        continue;
-      }
-
-      const blob = await res.blob();
-      await playBlob(blob);
-      return true;
+    try {
+      const query = new URL(endpoint, window.location.origin);
+      query.searchParams.set("text", text);
+      query.searchParams.set("voice", voice);
+      const okGet = await trySpeakRequest(query.toString(), {
+        method: "GET",
+        headers: { Accept: "audio/mpeg, application/json" },
+      });
+      if (okGet) return true;
     } catch {
       // intenta siguiente endpoint
     }
