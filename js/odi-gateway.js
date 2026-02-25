@@ -44,8 +44,38 @@ function countProducts(store) {
 
 function parsePrice(value) {
   if (value == null || value === "") return null;
-  const normalized = Number(String(value).replace(/[^\d.,-]/g, "").replace(/\./g, "").replace(",", "."));
-  return Number.isFinite(normalized) ? normalized : null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+
+  const raw = String(value).trim().replace(/[^\d.,-]/g, "");
+  if (!raw) return null;
+
+  const hasComma = raw.includes(",");
+  const hasDot = raw.includes(".");
+
+  let normalized = raw;
+
+  if (hasComma && hasDot) {
+    // Formato típico es-CO: 5.200,00
+    normalized = raw.replace(/\./g, "").replace(",", ".");
+  } else if (hasComma) {
+    // Decimal con coma: 5200,50
+    normalized = raw.replace(",", ".");
+  } else if (hasDot) {
+    const parts = raw.split(".");
+    if (parts.length > 2) {
+      // Múltiples puntos: 1.234.567
+      normalized = parts.join("");
+    } else {
+      const [whole, decimal] = parts;
+      if ((decimal || "").length === 3) {
+        // Probable miles: 9.310 -> 9310
+        normalized = `${whole}${decimal}`;
+      }
+    }
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function normalizeProducts(data) {
